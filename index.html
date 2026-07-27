@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>哲学笔记</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<header>
+  <h1>哲学笔记</h1>
+  <div class="search-wrap">
+    <input type="text" id="searchInput" placeholder="搜索哲学家、概念、关键词…" autofocus>
+  </div>
+  <div id="stats"></div>
+</header>
+
+<div class="filter-bar">
+  <button class="tab active" data-category="">全部</button>
+  <button class="tab" data-category="concept">概念</button>
+  <button class="tab" data-category="synthesis">合成</button>
+  <button class="tab" data-category="reading">阅读日志</button>
+</div>
+
+<div id="tagCloud" class="tag-cloud"></div>
+
+<main id="mainContent">
+  <div class="empty-state">
+    <div class="icon">⟡</div>
+    <p>加载中…</p>
+  </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0"></script>
+<script>
+const searchInput = document.getElementById('searchInput');
+const mainContent = document.getElementById('mainContent');
+const statsEl = document.getElementById('stats');
+const tagCloud = document.getElementById('tagCloud');
+
+let allNotes = [];
+let fuse = null;
+let currentCategory = '';
+let currentTag = '';
+let currentView = 'search';
+
+// ===== 初始化 =====
+async function init() {
+  try {
+    const resp = await fetch('/static/data.json');
+    const data = await resp.json();
+    allNotes = data.notes;
+
+    fuse = new Fuse(allNotes, {
+      keys: [
+        { name: 'title', weight: 3 },
+        { name: 'tags', weight: 2 },
+        { name: 'body_md', weight: 1 },
+      ],
+      threshold: 0.4,
+      ignoreLocation: true,
+    });
+
+    statsEl.textContent = `共 ${allNotes.length} 篇笔记`;
+    renderTagCloud();
+
+    if (window.location.hash.startsWith('#/note/')) {
+      showNote(decodeURIComponent(window.location.hash.slice(7)));
+    } else {
+      doSearch();
+    }
+  } catch (err) {
+    mainContent.innerHTML = `<div class="empty-state"><p>加载失败: ${err.message}</p></div>`;
+  }
+}
+
+// ===== 搜索 =====
+searchInput.addEventListener('input', () => {
+  clearTimeout(window._searchTimer);
+  window._searchTimer = setTimeout(doSearch, 200);
+});
+searchInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') { clearTimeout(window._searchTimer); doSearch(); }
+});
+
+function doSearch() {
+  currentView = 'search';
+  const q = searchInput.value.trim();
+  let results;
+
+  if (!q && !currentTag) {
+    let filtered = allNotes;
+    if (currentCategory) filtered = filtered.filter(n => n.category === currentCategory);
+    results = filtered.map(n => ({ item: n }));
+  } else {
+    let filtered = q ? fuse.search(q) : allNotes.map(n => ({ item: n }));
+    if (currentCategory) filtered = filtered.filter(r => r.item.category === currentCategory);
+    if (currentTag) filtered = filtered.filter(r => r.item.tags.includes(currentTag));
+    results = filtered;
+  }
+
+  statsEl.textContent = `共 ${results.length} 篇笔记`;
+  renderResults(results, q);
+  window.location.hash = '#/search';
+}
+
+function renderResults(results, query) {
+  if (!results.length) {
+    mainContent.innerHTML = `<div class="empty-state"><p>没有找到匹配的笔记</p></div>`;
+    return;
+  }
+
+  const list = document.createElement('div');
+  list.className = 'result-list';
+
+  results.forEach(r => {
+    const note = r.item;
+    const card = document.createElement('div');
+    card.className = 'result-card';
+
+    let excerpt = '';
+    if (query) {
+      const idx = note.body_md.toLowerCase().indexOf(query.toLowerCase());
+      if (idx !== -1) {
+        const s = Math.max(0, idx - 40);
+        const e = Math.min(note.body_md.length, idx + 110);
+        excerpt = (s > 0 ? '…' : '') + note.body_md.slice(s, e).replace(/\n/g, ' ') + (e < note.body_md.length ? '…' : '');
+      }
+    }
+
+    card.innerHTML = `
+      <h3>${esc(note.title)}</h3>
+      <div class="meta">
+        <span class="badge badge-${note.category}">${note.category_label}</span>
+        ${note.date ? `<span class="date">${note.date}</span>` : ''}
+      </div>
+      ${note.tags?.length ? `<div class="tags">${note.tags.map(t => `<span>#${esc(t)}</span>`).join('')}</div>` : ''}
+      ${excerpt ? `<div class="excerpt">${esc(excerpt)}</div>` : ''}
+    `;
+    card.addEventListener('click', () => showNote(note.id));
+    list.appendChild(card);
+  });
+
+  mainContent.innerHTML = '';
+  mainContent.appendChild(list);
+}
+
+// ===== 笔记详情 =====
+function showNote(noteId) {
+  currentView = 'detail';
+  const note = allNotes.find(n => n.id === noteId);
+  if (!note) {
+    mainContent.innerHTML = `<div class="empty-state"><p>笔记未找到</p></div>`;
+    return;
+  }
+
+  const div = document.createElement('div');
+  div.className = 'note-detail';
+  div.innerHTML = `
+    <a class="back" id="backBtn">← 返回搜索结果</a>
+    <h1>${esc(note.title)}</h1>
+    <div class="meta">
+      <span class="badge badge-${note.category}">${note.category_label}</span>
+      ${note.date ? `<span class="date">${note.date}</span>` : ''}
+      ${note.tags?.length ? note.tags.map(t => `<span class="tag-click" data-tag="${esc(t)}" style="font-size:12px;color:var(--accent-dim);cursor:pointer">#${esc(t)}</span>`).join('') : ''}
+    </div>
+    <div class="body">${note.body_html}</div>
+  `;
+
+  mainContent.innerHTML = '';
+  mainContent.appendChild(div);
+
+  document.getElementById('backBtn').onclick = () => { window.location.hash = '#/search'; doSearch(); };
+
+  div.querySelectorAll('.wikilink').forEach(el => {
+    el.onclick = (e) => { e.preventDefault(); showNote(el.dataset.noteId); };
+  });
+  div.querySelectorAll('.tag-click').forEach(el => {
+    el.onclick = () => { currentTag = el.dataset.tag; renderTagCloud(); window.location.hash = '#/search'; doSearch(); };
+  });
+
+  window.location.hash = `#/note/${encodeURIComponent(noteId)}`;
+}
+
+// ===== 标签云 =====
+function renderTagCloud() {
+  const cnt = {};
+  let ns = allNotes;
+  if (currentCategory) ns = ns.filter(n => n.category === currentCategory);
+  ns.forEach(n => (n.tags || []).forEach(t => { cnt[t] = (cnt[t] || 0) + 1; }));
+
+  tagCloud.innerHTML = Object.entries(cnt)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 30)
+    .map(([tag, c]) =>
+      `<button class="tag-btn${tag === currentTag ? ' active' : ''}" data-tag="${esc(tag)}">${esc(tag)} <span class="count">${c}</span></button>`
+    ).join('');
+
+  tagCloud.querySelectorAll('.tag-btn').forEach(el => {
+    el.onclick = () => {
+      currentTag = el.dataset.tag === currentTag ? '' : el.dataset.tag;
+      renderTagCloud();
+      window.location.hash = '#/search';
+      doSearch();
+    };
+  });
+}
+
+// ===== Tab =====
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.onclick = () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    currentCategory = tab.dataset.category;
+    currentTag = '';
+    renderTagCloud();
+    window.location.hash = '#/search';
+    doSearch();
+  };
+});
+
+// ===== 浏览器后退 =====
+window.onhashchange = () => {
+  const h = window.location.hash;
+  if (h.startsWith('#/note/')) showNote(decodeURIComponent(h.slice(7)));
+  else if (h === '#/search' && currentView === 'detail') doSearch();
+};
+
+function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+init();
+</script>
+</body>
+</html>
