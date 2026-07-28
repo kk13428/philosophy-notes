@@ -1103,15 +1103,17 @@ const NOTES = {
 
 <script>
 function showList(){document.getElementById('listView').style.display='';document.getElementById('detailView').style.display='none'}
-function showNote(id){const n=NOTES.notes.find(x=>x.id===id);if(!n)return;document.getElementById('listView').style.display='none';document.getElementById('detailView').style.display='';document.getElementById('detailTitle').textContent=n.title;document.getElementById('detailBody').innerHTML=n.body_html;document.getElementById('detailBody').querySelectorAll('.wikilink').forEach(function(el){el.onclick=function(){const t=el.textContent.trim();NOTES.notes.forEach(function(x){if(x.id===t||x.title===t||x.id==='Concepts/'+t||x.id==='Syntheses/'+t||x.id==='Readings/'+t){showNote(x.id)}})}})}
+function showNote(id){const n=NOTES.notes.find(function(x){return x.id===id});if(!n)return;document.getElementById('listView').style.display='none';document.getElementById('detailView').style.display='';document.getElementById('detailTitle').textContent=n.title;document.getElementById('detailBody').innerHTML=n.body_html;document.getElementById('detailBody').querySelectorAll('.wikilink').forEach(function(el){el.onclick=function(){var t=el.textContent.trim();var m=null;for(var i=0;i<NOTES.notes.length;i++){var x=NOTES.notes[i];if(x.id===t||x.title===t||x.id==='Concepts/'+t||x.id==='Syntheses/'+t||x.id==='Readings/'+t){m=x;break}}if(m)showNote(m.id)}})}
 function esc(s){var d=document.createElement('div');d.textContent=s;return d.innerHTML}
 
 var html='';
 NOTES.notes.forEach(function(n){
   var label='';if(n.category==='concept')label='概念';else if(n.category==='synthesis')label='合成';else if(n.category==='reading')label='阅读日志';
-  html+='<div class="glass card" onclick="showNote(''+n.id+'')"><div class="meta"><span class="tag">'+label+'</span><span>'+n.date+'</span></div><h3>'+esc(n.title)+'</h3></div>';
+  var _id=encodeURIComponent(n.id);
+  html+='<div class="glass card" data-id="'+_id+'"><div class="meta"><span class="tag">'+label+'</span><span>'+n.date+'</span></div><h3>'+esc(n.title)+'</h3></div>';
 });
 document.getElementById('listView').innerHTML=html;
+document.querySelectorAll('.card').forEach(function(el){el.onclick=function(){showNote(decodeURIComponent(el.dataset.id))}});
 </script>
 
 </body>
