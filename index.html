@@ -6,17 +6,18 @@
 <title>哲学笔记</title>
 <style>
 :root {
-  --bg: #1a1a2e;
-  --bg-card: #16213e;
-  --bg-hover: #1c2a4a;
-  --text: #e0e0e0;
-  --text-dim: #8892a4;
-  --accent: #64b5f6;
-  --accent-dim: #4a7aa7;
-  --tag-bg: #1e3a5f;
-  --border: #2a3a5c;
-  --radius: 8px;
-  --font: "PingFang SC", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+  --bg: #0f0f14;
+  --bg-card: rgba(24, 24, 31, 0.78);
+  --bg-hover: rgba(30, 30, 42, 0.85);
+  --text: #e8e6e3;
+  --text-dim: #88879b;
+  --accent: #f0c27f;
+  --accent-dim: #c49a5c;
+  --tag-bg: rgba(240, 194, 127, 0.1);
+  --border: rgba(255,255,255,.06);
+  --radius: 12px;
+  --radius-lg: 20px;
+  --font: "PingFang SC", "Noto Sans SC", "Microsoft YaHei", system-ui, sans-serif;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -28,11 +29,17 @@ body {
   min-height: 100vh;
 }
 
+/* Silk canvas background */
+#silk-canvas { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+body > *:not(#silk-canvas) { position: relative; z-index: 1; }
+
 a { color: var(--accent); text-decoration: none; }
 a:hover { text-decoration: underline; }
 
 /* Header */
 header {
+  backdrop-filter: blur(16px) saturate(1.1);
+  -webkit-backdrop-filter: blur(16px) saturate(1.1);
   background: var(--bg-card);
   border-bottom: 1px solid var(--border);
   padding: 20px 24px 16px;
@@ -42,9 +49,10 @@ header {
 }
 header h1 {
   font-size: 18px;
-  font-weight: 600;
+  font-weight: 700;
   margin-bottom: 12px;
   letter-spacing: 1px;
+  text-shadow: 0 2px 8px rgba(0,0,0,.3);
 }
 .search-wrap {
   display: flex;
@@ -54,8 +62,8 @@ header h1 {
   flex: 1;
   padding: 10px 16px;
   border-radius: var(--radius);
-  border: 1px solid var(--border);
-  background: var(--bg);
+  border: 1px solid rgba(255,255,255,.08);
+  background: rgba(0,0,0,.3);
   color: var(--text);
   font-size: 15px;
   font-family: var(--font);
@@ -63,10 +71,10 @@ header h1 {
   transition: border-color .2s;
 }
 .search-wrap input:focus {
-  border-color: var(--accent-dim);
+  border-color: var(--accent);
 }
 .search-wrap input::placeholder {
-  color: var(--text-dim);
+  color: #5c5b6e;
 }
 #stats {
   font-size: 12px;
@@ -89,17 +97,17 @@ header h1 {
   border-radius: 20px;
   font-size: 13px;
   cursor: pointer;
-  background: transparent;
+  background: rgba(255,255,255,.03);
   color: var(--text-dim);
   border: 1px solid var(--border);
   transition: all .2s;
   font-family: var(--font);
 }
-.tab:hover { color: var(--text); border-color: var(--accent-dim); }
+.tab:hover { border-color: var(--accent); color: var(--accent); }
 .tab.active {
-  background: var(--accent-dim);
-  color: #fff;
-  border-color: var(--accent-dim);
+  background: var(--tag-bg);
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
 /* Tag cloud */
@@ -120,8 +128,8 @@ header h1 {
   font-family: var(--font);
   transition: all .2s;
 }
-.tag-btn:hover { color: var(--text); background: #2a4a7a; }
-.tag-btn.active { background: var(--accent-dim); color: #fff; }
+.tag-btn:hover { color: var(--accent); background: var(--tag-bg); }
+.tag-btn.active { background: var(--tag-bg); color: var(--accent); border: 1px solid var(--accent); }
 .tag-btn .count { opacity: .6; margin-left: 2px; }
 
 /* Main content */
@@ -134,14 +142,21 @@ main {
 /* Search results */
 .result-list { display: flex; flex-direction: column; gap: 12px; }
 .result-card {
+  backdrop-filter: blur(12px) saturate(1.05);
+  -webkit-backdrop-filter: blur(12px) saturate(1.05);
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 16px 20px;
+  border-radius: var(--radius-lg);
+  padding: 24px 28px;
   cursor: pointer;
-  transition: background .2s;
+  box-shadow: 0 4px 20px rgba(0,0,0,.3);
+  transition: all .25s;
 }
-.result-card:hover { background: var(--bg-hover); }
+.result-card:hover {
+  background: var(--bg-hover);
+  transform: translateY(-2px);
+  border-color: rgba(240,194,127,.2);
+}
 .result-card h3 {
   font-size: 16px;
   margin-bottom: 4px;
@@ -160,9 +175,9 @@ main {
   font-size: 11px;
   font-weight: 500;
 }
-.badge-concept { background: #1b5e20; color: #a5d6a7; }
-.badge-synthesis { background: #4a148c; color: #ce93d8; }
-.badge-reading { background: #e65100; color: #ffcc80; }
+.badge-concept { background: rgba(126,184,224,.15); color: #7eb8e0; }
+.badge-synthesis { background: rgba(240,194,127,.15); color: #f0c27f; }
+.badge-reading { background: rgba(123,201,160,.15); color: #7bc9a0; }
 .result-card .date { color: var(--text-dim); }
 .result-card .tags {
   display: flex;
@@ -172,7 +187,8 @@ main {
 }
 .result-card .tags span {
   font-size: 11px;
-  color: var(--accent-dim);
+  color: var(--accent);
+  opacity: .7;
 }
 .result-card .excerpt {
   font-size: 13px;
@@ -194,6 +210,13 @@ main {
 
 /* Note detail view */
 .note-detail {
+  backdrop-filter: blur(14px) saturate(1.05);
+  -webkit-backdrop-filter: blur(14px) saturate(1.05);
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  padding: 36px 40px 32px;
+  border: 1px solid var(--border);
+  box-shadow: 0 8px 32px rgba(0,0,0,.4);
   animation: fadeIn .25s;
 }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
@@ -206,8 +229,10 @@ main {
 }
 .note-detail .back:hover { text-decoration: underline; }
 .note-detail h1 {
-  font-size: 22px;
-  margin-bottom: 6px;
+  font-size: clamp(22px, 3.5vw, 32px);
+  font-weight: 700;
+  margin-bottom: 8px;
+  text-shadow: 0 2px 8px rgba(0,0,0,.3);
 }
 .note-detail .meta {
   display: flex;
@@ -234,14 +259,20 @@ main {
 .note-detail .body ul, .note-detail .body ol { margin: 8px 0 12px 20px; }
 .note-detail .body li { margin-bottom: 4px; }
 .note-detail .body blockquote {
-  border-left: 3px solid var(--accent-dim);
-  padding: 8px 16px;
-  margin: 12px 0;
-  background: rgba(100, 181, 246, .05);
+  border-left: 3px solid var(--accent);
+  padding: 10px 18px;
+  margin: 14px 0;
+  background: var(--bg-hover);
+  border-radius: 0 var(--radius) var(--radius) 0;
   color: var(--text-dim);
-  font-style: italic;
 }
-.note-detail .body strong { color: #fff; }
+.note-detail .body strong {
+  color: var(--text);
+  background: var(--tag-bg);
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-weight: 600;
+}
 .note-detail .body hr { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
 .wikilink { color: var(--accent); cursor: pointer; }
 .wikilink:hover { text-decoration: underline; }
@@ -261,6 +292,16 @@ main {
 </style>
 </head>
 <body>
+<canvas id="silk-canvas"></canvas>
+<script>
+(function(){const c=document.getElementById('silk-canvas'),cx=c.getContext('2d');let w,h,t=0,dots=[]
+function resize(){w=c.width=innerWidth;h=c.height=innerHeight;const s=44;dots=[];for(let r=0;r<Math.ceil(h/s)+1;r++)for(let i=0;i<Math.ceil(w/s)+1;i++)dots.push({x:i*s+(Math.random()-.5)*5,y:r*s+(Math.random()-.5)*5,p:Math.random()*Math.PI*2,sp:.3+Math.random()*.4,ba:.04+Math.random()*.06})}
+function draw(){cx.clearRect(0,0,w,h);t+=.008;for(const d of dots){const a=Math.min(d.ba*(Math.sin(t*d.sp+d.p)*.35+.65),.10);if(a>.004){cx.beginPath();cx.arc(d.x,d.y,1,0,Math.PI*2);cx.fillStyle=`rgba(160,175,200,${a})`;cx.fill()}}
+for(let i=0;i<8;i++){cx.beginPath();const off=i*.8+Math.sin(i)*.3;for(let j=0;j<=80;j++){const u=j/80,x=j*w/80,y=h*.5+Math.sin(u*Math.PI*3+t*.15+off)*60+Math.sin(u*Math.PI*1.5+t*.1+off*1.3)*35+Math.sin(u*Math.PI*5+t*.08+off*.7)*15+Math.sin(off)*20;j===0?cx.moveTo(x,y):cx.lineTo(x,y)}
+cx.strokeStyle=['rgba(180,175,165,.12)','rgba(160,175,190,.10)','rgba(190,175,160,.10)','rgba(170,180,175,.08)'][i%4];cx.lineWidth=1.2;cx.globalAlpha=.06+(i%3)*.025;cx.stroke();cx.globalAlpha=1}
+requestAnimationFrame(draw)}
+addEventListener('resize',resize);resize();draw()})();
+</script>
 
 <header>
   <h1>哲学笔记</h1>
