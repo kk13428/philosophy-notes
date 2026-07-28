@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>费希特 · J.G. Fichte</title>
+<style>
+/* ===== 设计系统 ===== */
+:root {
+  --bg: #0f0f14;
+  --bg-card: rgba(24, 24, 31, 0.72);
+  --bg-card-alt: rgba(30, 30, 40, 0.68);
+  --text: #e8e6e3;
+  --text-dim: #88879b;
+  --text-muted: #5c5b6e;
+  --accent: #f0c27f;
+  --accent-glow: rgba(240, 194, 127, 0.12);
+  --accent-line: #c49a5c;
+  --blue-accent: #7eb8e0;
+  --green-accent: #7bc9a0;
+  --radius: 12px;
+  --radius-lg: 20px;
+  --font: "PingFang SC", "Noto Sans SC", "Microsoft YaHei", system-ui, sans-serif;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.8;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ===== Canvas 动画背景 ===== */
+#silk-canvas {
+  position: fixed; inset: 0;
+  width: 100%; height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* ===== 页面容器 ===== */
+.page-wrap {
+  position: relative;
+  z-index: 1;
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 48px 24px 100px;
+}
+
+/* ===== 磨砂玻璃卡 ===== */
+.glass {
+  backdrop-filter: blur(16px) saturate(1.1);
+  -webkit-backdrop-filter: blur(16px) saturate(1.1);
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  padding: 40px 44px 36px;
+  margin-bottom: 28px;
+  border: 1px solid rgba(255,255,255,.05);
+  box-shadow: 0 8px 40px rgba(0,0,0,.45);
+}
+.glass-alt {
+  backdrop-filter: blur(12px) saturate(1.05);
+  -webkit-backdrop-filter: blur(12px) saturate(1.05);
+  background: var(--bg-card-alt);
+  border-radius: var(--radius);
+  padding: 28px 36px;
+  margin-bottom: 20px;
+  border: 1px solid rgba(255,255,255,.04);
+  box-shadow: 0 6px 28px rgba(0,0,0,.35);
+}
+
+/* ===== 英雄区 ===== */
+.hero-card {
+  text-align: center;
+  padding: 52px 44px 40px;
+  position: relative;
+  overflow: hidden;
+}
+.hero-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent), var(--blue-accent), var(--green-accent));
+}
+.hero-tag {
+  font-size: 12px;
+  letter-spacing: .15em;
+  color: var(--accent);
+  margin-bottom: 16px;
+}
+.hero-tag::before { content: '◆ '; font-size: 8px; }
+.hero-title {
+  font-size: clamp(28px, 4vw, 36px);
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: .02em;
+  margin-bottom: 8px;
+  text-shadow: 0 2px 12px rgba(0,0,0,.3);
+}
+.hero-sub {
+  font-size: 14px;
+  color: var(--text-dim);
+  line-height: 1.7;
+  max-width: 520px;
+  margin: 0 auto;
+}
+.hero-meta {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255,255,255,.06);
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* ===== 核心立场 ===== */
+.thesis-block {
+  text-align: center;
+  padding: 36px 44px;
+  border-left: 4px solid var(--accent);
+}
+.thesis-label {
+  font-size: 11px;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 14px;
+  font-weight: 600;
+}
+.thesis-text {
+  font-size: clamp(17px, 2.2vw, 21px);
+  font-weight: 650;
+  line-height: 1.7;
+}
+.thesis-text .highlight {
+  background: linear-gradient(120deg, var(--accent-glow) 0%, var(--accent-glow) 60%, transparent 90%);
+  padding: 2px 10px;
+  font-weight: 700;
+  color: var(--accent);
+  border-radius: 3px;
+}
+
+/* ===== 章节标题 ===== */
+.section-title {
+  text-align: center;
+  font-size: 12px;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 24px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(255,255,255,.06);
+}
+
+/* ===== 关键概念 ===== */
+.concept-list {
+  text-align: center;
+}
+.concept-item {
+  padding: 18px 0;
+  border-bottom: 1px solid rgba(255,255,255,.04);
+}
+.concept-item:last-child { border-bottom: none; padding-bottom: 0; }
+.concept-item h3 {
+  font-size: 15px;
+  font-weight: 650;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+.concept-item h3 .dot {
+  display: inline-block;
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+.concept-item h3 .dot.gold { background: var(--accent); }
+.concept-item h3 .dot.blue { background: var(--blue-accent); }
+.concept-item h3 .dot.green { background: var(--green-accent); }
+.concept-item p {
+  font-size: 14px;
+  color: var(--text-dim);
+  line-height: 1.8;
+  max-width: 580px;
+  margin: 0 auto;
+}
+.concept-item .key {
+  font-weight: 600;
+  color: var(--text);
+  background: linear-gradient(120deg, rgba(126,184,224,.15) 0%, rgba(126,184,224,.05) 100%);
+  padding: 1px 8px;
+  border-radius: 3px;
+}
+
+/* ===== 知识碰撞 ===== */
+.collision-list {
+  text-align: center;
+}
+.collision-item {
+  padding: 18px 0;
+  border-bottom: 1px solid rgba(255,255,255,.04);
+}
+.collision-item:last-child { border-bottom: none; padding-bottom: 0; }
+.collision-item h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+.collision-item p {
+  font-size: 13.5px;
+  color: var(--text-dim);
+  line-height: 1.75;
+  max-width: 580px;
+  margin: 0 auto;
+}
+.collision-item .em {
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* ===== 脚本区 ===== */
+.script-block {
+  padding: 36px 44px;
+  position: relative;
+  text-align: center;
+}
+.script-block::before {
+  content: '\201C';
+  position: absolute;
+  top: -4px; left: 20px;
+  font-size: 72px;
+  line-height: 1;
+  color: var(--accent);
+  opacity: .12;
+  font-family: Georgia, serif;
+  pointer-events: none;
+}
+.script-block p {
+  font-size: 14.5px;
+  line-height: 1.85;
+  color: var(--text-dim);
+}
+.script-block .pull {
+  font-size: 16.5px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* ===== 链接 ===== */
+.links-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  padding: 2px 0;
+}
+.links-row a {
+  display: inline-block;
+  padding: 6px 18px;
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.06);
+  border-radius: 20px;
+  font-size: 12.5px;
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: all .2s;
+}
+.links-row a:hover {
+  background: var(--accent-glow);
+  border-color: var(--accent-line);
+  color: var(--accent);
+}
+
+/* ===== 响应式 ===== */
+@media (max-width: 640px) {
+  .page-wrap { padding: 24px 16px 60px; }
+  .glass, .hero-card, .thesis-block, .script-block { padding: 28px 20px; }
+  .glass-alt { padding: 24px 20px; }
+}
+</style>
+</head>
+<body>
+
+<canvas id="silk-canvas"></canvas>
+
+<script>
+(function() {
+  const canvas = document.getElementById('silk-canvas');
+  const ctx = canvas.getContext('2d');
+  let w, h, time = 0, dots = [];
+
+  function resize() {
+    w = canvas.width = window.innerWidth;
+    h = canvas.height = window.innerHeight;
+    generateDots();
+  }
+  function generateDots() {
+    const spacing = 44;
+    dots = [];
+    for (let r = 0; r < Math.ceil(h/spacing)+1; r++)
+      for (let c = 0; c < Math.ceil(w/spacing)+1; c++)
+        dots.push({ x: c*spacing+(Math.random()-.5)*5, y: r*spacing+(Math.random()-.5)*5, phase: Math.random()*Math.PI*2, speed: .3+Math.random()*.4, baseAlpha: .04+Math.random()*.06 });
+  }
+  function drawDots() {
+    for (const d of dots) {
+      const a = Math.min(d.baseAlpha*(Math.sin(time*d.speed+d.phase)*.35+.65), .10);
+      if (a < .005) continue;
+      ctx.beginPath(); ctx.arc(d.x, d.y, 1, 0, Math.PI*2);
+      ctx.fillStyle = `rgba(160,175,200,${a})`; ctx.fill();
+    }
+  }
+  function drawSilk(offset, alpha, color) {
+    ctx.beginPath();
+    for (let i = 0; i <= 80; i++) {
+      const t = i/80, x = i*w/80;
+      const y = h*.5 + Math.sin(t*Math.PI*3+time*.15+offset)*60 + Math.sin(t*Math.PI*1.5+time*.1+offset*1.3)*35 + Math.sin(t*Math.PI*5+time*.08+offset*.7)*15 + Math.sin(offset)*20;
+      i === 0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+    }
+    ctx.strokeStyle = color; ctx.lineWidth = 1.2;
+    ctx.globalAlpha = alpha; ctx.stroke(); ctx.globalAlpha = 1;
+  }
+  function draw() {
+    ctx.clearRect(0,0,w,h); time += .008;
+    drawDots();
+    for (let i = 0; i < 8; i++) drawSilk(i*.8+Math.sin(i)*.3, .06+(i%3)*.025, ['rgba(180,175,165,.12)','rgba(160,175,190,.10)','rgba(190,175,160,.10)','rgba(170,180,175,.08)'][i%4]);
+    requestAnimationFrame(draw);
+  }
+  window.addEventListener('resize', resize);
+  resize(); draw();
+})();
+</script>
+
+<div class="page-wrap">
+
+  <!-- 英雄区 -->
+  <div class="glass hero-card">
+    <div class="hero-tag">2026.07.28 · 德国观念论</div>
+    <h1 class="hero-title">费希特<br>J.G. Fichte, 1762–1814</h1>
+    <p class="hero-sub">康德与黑格尔之间最关键的那座桥。他把康德的「先验统觉」从一个空的逻辑条件，变成了一种活的、自我设定的行动。</p>
+    <div class="hero-meta">
+      <span>◈ 概念笔记</span>
+      <span>◈ 知识碰撞 → 康德</span>
+      <span>◈ 阅读日志</span>
+    </div>
+  </div>
+
+  <!-- 核心立场 -->
+  <div class="glass-alt thesis-block">
+    <div class="thesis-label">⭑ 核心立场</div>
+    <div class="thesis-text">
+      <span class="highlight">自我不是「有」的</span>——自我是<span class="highlight">「做」</span>的。<br>
+      那个「我」不是静止的逻辑条件——它是一个<span class="highlight">动态的行动</span>：<br>
+      <span class="highlight">自我设定自身。</span>
+    </div>
+  </div>
+
+  <!-- 关键概念 -->
+  <div class="glass">
+    <div class="section-title">关键概念</div>
+    <div class="concept-list">
+      <div class="concept-item">
+        <h3><span class="dot gold"></span>知识学 · Wissenschaftslehre</h3>
+        <p>康德问「经验如何可能」——费希特问得更深：<span class="key">这些条件本身如何可能？</span> 他从<span class="key">自我设定自身</span>这一原点，推导出所有先验条件。</p>
+      </div>
+      <div class="concept-item">
+        <h3><span class="dot blue"></span>第一原理 · 自我设定自身</h3>
+        <p>「我 = 我」是<span class="key">自我意识的原始行动</span>。费希特叫它「事实行动」（Tathandlung）——<span class="key">同时是事实和行动</span>。不是先有「我」再行动——<span class="key">「我」就是在行动中产生的。</span></p>
+      </div>
+      <div class="concept-item">
+        <h3><span class="dot green"></span>第二原理 · 自我设定非我</h3>
+        <p>自我需要<span class="key">「非我」</span>来意识到自己。非我也是<span class="key">自我的产物</span>：自我自己给自己设限。这一步直接<span class="key">取消了康德的「物自体」</span>。</p>
+      </div>
+      <div class="concept-item">
+        <h3><span class="dot gold"></span>第三原理 · 自我与非我相互限制</h3>
+        <p>无限的行动在自我之中被有限的东西限制——<span class="key">这个相互作用就是经验世界的全部内容。</span></p>
+      </div>
+      <div class="concept-item">
+        <h3><span class="dot blue"></span>自由不是属性——自由是形式</h3>
+        <p>你不是「有」自由——<span class="key">你就是自由的行动本身。</span> 道德律不是给你定的——是你<span class="key">自己给自己定的。</span></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 知识碰撞 -->
+  <div class="glass">
+    <div class="section-title">知识碰撞</div>
+    <div class="collision-list">
+      <div class="collision-item">
+        <h3>↯ vs 康德 · 物自体的命运</h3>
+        <p>康德说物自体不可知——费希特说：<span class="em">这个概念是多余的。</span>「被刺激」的感觉来自<span class="em">自我的自我限制</span>——不需要物自体。</p>
+      </div>
+      <div class="collision-item">
+        <h3>↯ vs 康德 · 自我的本质</h3>
+        <p>康德：统觉是<span class="em">空的逻辑条件</span>。费希特：自我是<span class="em">生产性的、无限的</span>——一切意识的生产者。这是存在主义主体性概念的真正源头。</p>
+      </div>
+      <div class="collision-item">
+        <h3>→ 通往萨特</h3>
+        <p>萨特的「自为存在」——<span class="em">几乎是费希特「绝对自我」的20世纪版本。</span> 差异在于：费希特的非我是内在张力，萨特的「他者」是外部冲突。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 口播 -->
+  <div class="glass script-block">
+    <div class="section-title" style="margin-bottom:14px;">三分钟理解费希特</div>
+    <p>
+      <span class="pull">康德宣布了理性能力的边界。十三年后，一个年轻人说：康德还不够。</span><br><br>
+      费希特读康德《纯粹理性批判》时被彻底震撼了——他后来在信中写道：「我相信这个人不是凡人。」但他很快发现一个问题：康德留下了一个「物自体」——一个你永远无法认识的东西。费希特说：这不可能是终点。如果一个哲学家说「这里有个东西但我什么都不能说」——那他实际上是在哲学体系里留了一个洞。<br><br>
+      <span class="pull">费希特的解决方案：一切从自我的活动出发。</span><br><br>
+      自我不是你的身份、不是你的性格、不是你的记忆——它是你在说出「我」的那一刻所做的自我指向的行动。从这个行动中，费希特推导出了意识的所有结构，包括「世界」本身。这一招直接消掉了康德的「物自体」：让自我意识到自己的不是外来物——是自我自己设定的「非我」，用来激发自己的成长。<br><br>
+      <span class="pull">你不是被动接收世界的容器——你是主动构建世界的力量。</span>
+    </p>
+  </div>
+
+  <!-- 相关链接 -->
+  <div class="glass" style="padding: 20px 28px;">
+    <div class="section-title" style="margin-bottom:12px;">相关链接</div>
+    <div class="links-row">
+      <a href="#">康德</a>
+      <a href="#">黑格尔</a>
+      <a href="#">萨特</a>
+      <a href="#">谢林</a>
+      <a href="#">德国观念论</a>
+      <a href="#">现象与物自体</a>
+      <a href="#">自由与道德</a>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>
