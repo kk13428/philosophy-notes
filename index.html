@@ -4,77 +4,289 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>哲学笔记</title>
-<script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0"></script>
 <style>
-:root{--bg:#0f0f14;--bg-card:rgba(24,24,31,0.72);--bg-card-alt:rgba(30,30,40,0.68);--text:#e8e6e3;--text-dim:#88879b;--text-muted:#5c5b6e;--accent:#f0c27f;--accent-glow:rgba(240,194,127,0.12);--accent-line:#c49a5c;--blue-accent:#7eb8e0;--radius:12px;--radius-lg:20px;--font:"PingFang SC","Noto Sans SC","Microsoft YaHei",system-ui,sans-serif}
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:1.8;min-height:100vh;overflow-x:hidden}
-a{color:var(--accent);text-decoration:none}
-a:hover{text-decoration:underline}
-#silk-canvas{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
-header{position:relative;z-index:1;backdrop-filter:blur(16px) saturate(1.1);-webkit-backdrop-filter:blur(16px) saturate(1.1);background:var(--bg-card);border-bottom:1px solid rgba(255,255,255,.05);padding:20px 24px 16px;position:sticky;top:0;z-index:10}
-header h1{font-size:18px;font-weight:700;margin-bottom:12px;letter-spacing:1px;text-shadow:0 2px 8px rgba(0,0,0,.3)}
-.search-wrap{display:flex;gap:10px}
-.search-wrap input{flex:1;padding:10px 16px;border-radius:var(--radius);border:1px solid rgba(255,255,255,.08);background:rgba(0,0,0,.3);color:var(--text);font-size:15px;font-family:var(--font);outline:none;transition:border-color .2s}
-.search-wrap input:focus{border-color:var(--accent-line)}
-.search-wrap input::placeholder{color:var(--text-muted)}
-#stats{font-size:12px;color:var(--text-muted);margin-top:6px}
-.filter-bar{display:flex;align-items:center;gap:6px;margin-top:10px;flex-wrap:wrap}
-.filter-bar button{padding:4px 14px;border-radius:20px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.03);color:var(--text-muted);font-size:12px;font-family:var(--font);cursor:pointer;transition:all .2s}
-.filter-bar button:hover,.filter-bar button.active{background:var(--accent-glow);border-color:var(--accent-line);color:var(--accent)}
-#mainContent{position:relative;z-index:1;max-width:880px;margin:0 auto;padding:24px 24px 80px}
-.note-card{backdrop-filter:blur(16px) saturate(1.1);-webkit-backdrop-filter:blur(16px) saturate(1.1);background:var(--bg-card);border-radius:var(--radius-lg);padding:28px 32px;margin-bottom:16px;border:1px solid rgba(255,255,255,.05);box-shadow:0 6px 28px rgba(0,0,0,.35);cursor:pointer;transition:all .25s}
-.note-card:hover{transform:translateY(-2px);border-color:rgba(240,194,127,.2)}
-.note-card .ntitle{font-size:17px;font-weight:650;color:var(--text);margin-bottom:6px}
-.note-card .nmeta{font-size:12px;color:var(--text-muted);display:flex;gap:12px;align-items:center}
-.note-card .ncat{display:inline-block;padding:2px 10px;border-radius:12px;font-size:11px;background:var(--accent-glow);color:var(--accent)}
-#noteDetail{backdrop-filter:blur(16px) saturate(1.1);-webkit-backdrop-filter:blur(16px) saturate(1.1);background:var(--bg-card);border-radius:var(--radius-lg);padding:40px 44px 36px;border:1px solid rgba(255,255,255,.05);box-shadow:0 8px 40px rgba(0,0,0,.45)}
-.back-btn{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--text-muted);margin-bottom:20px;cursor:pointer}
-.back-btn:hover{color:var(--accent)}
-#noteDetail h1{font-size:clamp(24px,3.5vw,32px);font-weight:700;line-height:1.3;margin-bottom:16px;text-shadow:0 2px 12px rgba(0,0,0,.3)}
-#noteDetail h2{font-size:18px;font-weight:650;margin:28px 0 12px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,.06);color:var(--text)}
-#noteDetail h3{font-size:16px;font-weight:600;margin:20px 0 8px;color:var(--text)}
-#noteDetail p{font-size:14.5px;color:var(--text-dim);line-height:1.8;margin-bottom:12px}
-#noteDetail strong{color:var(--text);font-weight:600;background:var(--accent-glow);padding:1px 6px;border-radius:3px}
-#noteDetail ul,#noteDetail ol{padding-left:24px;margin-bottom:12px}
-#noteDetail li{font-size:14.5px;color:var(--text-dim);line-height:1.8;margin-bottom:4px}
-#noteDetail blockquote{border-left:3px solid var(--accent);padding:12px 20px;margin:16px 0;background:var(--bg-card-alt);border-radius:0 var(--radius) var(--radius) 0;font-size:14px;color:var(--text-dim)}
-#noteDetail hr{border:none;height:1px;background:rgba(255,255,255,.06);margin:24px 0}
-#noteDetail code{background:rgba(255,255,255,.06);padding:2px 6px;border-radius:4px;font-size:13px;color:var(--blue-accent)}
-#noteDetail .detail-meta{display:flex;gap:16px;font-size:12px;color:var(--text-muted);margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid rgba(255,255,255,.06)}
-#noteDetail .detail-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:24px;padding-top:16px;border-top:1px solid rgba(255,255,255,.06)}
-#noteDetail .detail-tags span{display:inline-block;padding:3px 12px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);border-radius:14px;font-size:12px;color:var(--text-muted)}
-.empty-state{text-align:center;padding:60px 20px;color:var(--text-muted);font-size:15px}
-@media(max-width:640px){#mainContent{padding:16px 16px 60px}#noteDetail,.note-card{padding:24px 20px}header{padding:16px 16px 12px}}
+:root {
+  --bg: #1a1a2e;
+  --bg-card: #16213e;
+  --bg-hover: #1c2a4a;
+  --text: #e0e0e0;
+  --text-dim: #8892a4;
+  --accent: #64b5f6;
+  --accent-dim: #4a7aa7;
+  --tag-bg: #1e3a5f;
+  --border: #2a3a5c;
+  --radius: 8px;
+  --font: "PingFang SC", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.7;
+  min-height: 100vh;
+}
+
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* Header */
+header {
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border);
+  padding: 20px 24px 16px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+header h1 {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  letter-spacing: 1px;
+}
+.search-wrap {
+  display: flex;
+  gap: 10px;
+}
+.search-wrap input {
+  flex: 1;
+  padding: 10px 16px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 15px;
+  font-family: var(--font);
+  outline: none;
+  transition: border-color .2s;
+}
+.search-wrap input:focus {
+  border-color: var(--accent-dim);
+}
+.search-wrap input::placeholder {
+  color: var(--text-dim);
+}
+#stats {
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-top: 6px;
+}
+
+/* Filter bar */
+.filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+.tab {
+  padding: 4px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  cursor: pointer;
+  background: transparent;
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+  transition: all .2s;
+  font-family: var(--font);
+}
+.tab:hover { color: var(--text); border-color: var(--accent-dim); }
+.tab.active {
+  background: var(--accent-dim);
+  color: #fff;
+  border-color: var(--accent-dim);
+}
+
+/* Tag cloud */
+.tag-cloud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 0 24px 12px;
+}
+.tag-btn {
+  font-size: 11px;
+  padding: 2px 10px;
+  border-radius: 12px;
+  background: var(--tag-bg);
+  color: var(--text-dim);
+  border: none;
+  cursor: pointer;
+  font-family: var(--font);
+  transition: all .2s;
+}
+.tag-btn:hover { color: var(--text); background: #2a4a7a; }
+.tag-btn.active { background: var(--accent-dim); color: #fff; }
+.tag-btn .count { opacity: .6; margin-left: 2px; }
+
+/* Main content */
+main {
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 20px 24px 60px;
+}
+
+/* Search results */
+.result-list { display: flex; flex-direction: column; gap: 12px; }
+.result-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  cursor: pointer;
+  transition: background .2s;
+}
+.result-card:hover { background: var(--bg-hover); }
+.result-card h3 {
+  font-size: 16px;
+  margin-bottom: 4px;
+}
+.result-card .meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+  font-size: 12px;
+}
+.badge {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 500;
+}
+.badge-concept { background: #1b5e20; color: #a5d6a7; }
+.badge-synthesis { background: #4a148c; color: #ce93d8; }
+.badge-reading { background: #e65100; color: #ffcc80; }
+.result-card .date { color: var(--text-dim); }
+.result-card .tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  margin-bottom: 4px;
+}
+.result-card .tags span {
+  font-size: 11px;
+  color: var(--accent-dim);
+}
+.result-card .excerpt {
+  font-size: 13px;
+  color: var(--text-dim);
+  line-height: 1.6;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Empty state */
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-dim);
+}
+.empty-state .icon { font-size: 40px; margin-bottom: 12px; }
+
+/* Note detail view */
+.note-detail {
+  animation: fadeIn .25s;
+}
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.note-detail .back {
+  display: inline-block;
+  margin-bottom: 16px;
+  font-size: 13px;
+  color: var(--accent);
+  cursor: pointer;
+}
+.note-detail .back:hover { text-decoration: underline; }
+.note-detail h1 {
+  font-size: 22px;
+  margin-bottom: 6px;
+}
+.note-detail .meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  font-size: 13px;
+}
+.note-detail .body {
+  font-size: 15px;
+  line-height: 1.8;
+}
+.note-detail .body h2 {
+  font-size: 18px;
+  margin: 24px 0 10px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--border);
+}
+.note-detail .body h3 {
+  font-size: 16px;
+  margin: 20px 0 8px;
+}
+.note-detail .body p { margin-bottom: 12px; }
+.note-detail .body ul, .note-detail .body ol { margin: 8px 0 12px 20px; }
+.note-detail .body li { margin-bottom: 4px; }
+.note-detail .body blockquote {
+  border-left: 3px solid var(--accent-dim);
+  padding: 8px 16px;
+  margin: 12px 0;
+  background: rgba(100, 181, 246, .05);
+  color: var(--text-dim);
+  font-style: italic;
+}
+.note-detail .body strong { color: #fff; }
+.note-detail .body hr { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+.wikilink { color: var(--accent); cursor: pointer; }
+.wikilink:hover { text-decoration: underline; }
+.wikilink-broken { color: var(--text-dim); border-bottom: 1px dashed var(--border); }
+
+/* Loading */
+.loading { text-align: center; padding: 40px; color: var(--text-dim); }
+
+/* Responsive */
+@media (max-width: 600px) {
+  header { padding: 14px 16px 12px; }
+  .filter-bar { padding: 10px 16px; }
+  main { padding: 14px 16px 40px; }
+  .result-card { padding: 12px 16px; }
+}
+
 </style>
 </head>
 <body>
-<canvas id="silk-canvas"></canvas>
-<script>
-(function(){const c=document.getElementById("silk-canvas"),cx=c.getContext("2d");let w,h,t=0,dots=[]
-function resize(){w=c.width=innerWidth;h=c.height=innerHeight;const s=44;dots=[];for(let r=0;r<Math.ceil(h/s)+1;r++)for(let i=0;i<Math.ceil(w/s)+1;i++)dots.push({x:i*s+(Math.random()-.5)*5,y:r*s+(Math.random()-.5)*5,p:Math.random()*Math.PI*2,sp:.3+Math.random()*.4,ba:.04+Math.random()*.06})}
-function draw(){cx.clearRect(0,0,w,h);t+=.008;for(const d of dots){const a=Math.min(d.ba*(Math.sin(t*d.sp+d.p)*.35+.65),.10);if(a>.004){cx.beginPath();cx.arc(d.x,d.y,1,0,Math.PI*2);cx.fillStyle=`rgba(160,175,200,${a})`;cx.fill()}}
-for(let i=0;i<8;i++){cx.beginPath();const off=i*.8+Math.sin(i)*.3;for(let j=0;j<=80;j++){const u=j/80,x=j*w/80,y=h*.5+Math.sin(u*Math.PI*3+t*.15+off)*60+Math.sin(u*Math.PI*1.5+t*.1+off*1.3)*35+Math.sin(u*Math.PI*5+t*.08+off*.7)*15+Math.sin(off)*20;j===0?cx.moveTo(x,y):cx.lineTo(x,y)}
-cx.strokeStyle=["rgba(180,175,165,.12)","rgba(160,175,190,.10)","rgba(190,175,160,.10)","rgba(170,180,175,.08)"][i%4];cx.lineWidth=1.2;cx.globalAlpha=.06+(i%3)*.025;cx.stroke();cx.globalAlpha=1}
-requestAnimationFrame(draw)}
-addEventListener("resize",resize);resize();draw()})();
-</script>
+
 <header>
   <h1>哲学笔记</h1>
   <div class="search-wrap">
-    <input type="text" id="searchInput" placeholder="搜索哲学家、概念、标签…" autocomplete="off">
+    <input type="text" id="searchInput" placeholder="搜索哲学家、概念、关键词…" autofocus>
   </div>
   <div id="stats"></div>
-  <div class="filter-bar" id="filterBar">
-    <button data-cat="" class="active">全部</button>
-    <button data-cat="concept">概念</button>
-    <button data-cat="synthesis">合成</button>
-    <button data-cat="reading">阅读</button>
-  </div>
 </header>
-<div id="tagCloud" style="display:none"></div>
-<div id="mainContent"></div>
 
+<div class="filter-bar">
+  <button class="tab active" data-category="">全部</button>
+  <button class="tab" data-category="concept">概念</button>
+  <button class="tab" data-category="synthesis">合成</button>
+  <button class="tab" data-category="reading">阅读日志</button>
+</div>
+
+<div id="tagCloud" class="tag-cloud"></div>
+
+<main id="mainContent">
+  <div class="empty-state">
+    <div class="icon">&#x27E1;</div>
+    <p>加载中...</p>
+  </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0"></script>
 <script>
 const NOTES = {
   "notes": [
@@ -841,7 +1053,8 @@ const NOTES = {
       "body_md": "# 日常学习：费希特——从\"我思\"到\"我设定\"\n\n## 今日学习\n\n- **约翰·戈特利布·费希特**（Johann Gottlieb Fichte, 1762–1814）——康德之后的德国观念论第一人。\n- 核心关注：**从康德的\"先验统觉\"到费希特的\"自我设定自身\"——这个转变到底意味着什么？**\n- 今天不是一个独立哲学家的学习——是**填补一块拼图**：康德→费希特→黑格尔这条线，费希特之前一直缺席。\n\n## 为什么是费希特\n\n之前学德国观念论的时候，一直有一个跳跃：从康德直接跨到了黑格尔。中间好像少了什么。\n\n今天补上之后发现：**少了费希特，你就看不懂黑格尔在跟谁吵架。** 黑格尔的整个《精神现象学》——从意识开始，经过自我意识，到理性——本质上是一个对费希特\"自我学说\"的批判性重写。\n\n没有费希特的\"自我设定自身\"，黑格尔的\"实体即主体\"就没有对手。\n\n## 知识碰撞\n\n### 一个直觉：费希特是\"内向的\"康德\n\n昨天我们说康德是\"地基\"——他为现代哲学搭建了舞台。今天学完费希特后，一个想法冒出来了：**费希特把康德\"推倒了\"——不是推倒建筑——是把整个建筑从\"外部\"移到了\"内部\"。**\n\n康德还在说：外部世界（现象）符合认知结构。费希特说：**你的认知结构本身就在创造那个\"外部\"的体验。**\n\n这是向内的一步——不是缩小了范围——是发现\"内部\"本身比想象的大得多。费希特在尝试：能不能从内在行动出发——推导出外部世界的全部结构？\n\n这个尝试有没有成功？标准答案是\"没有\"——黑格尔和谢林都批评费希特的\"非我\"仍然是一个剩余物，一个无法被完全内化的\"他者\"。但我要说：即使失败了——它是一个极其壮丽的失败。费希特证明了\"从内部出发\"的极限在哪。这个极限本身——就是哲学的重要收获。\n\n### 费希特 vs 萨特：自因的幻象？\n\n今天笔记里写到：萨特和费希特非常像——两人都认为自我不是实体而是行动。\n\n但细想之后发现一个深层差异：\n\n费希特的\"自我设定自身\"：自我既是设定者（主体）也是被设定者（客体）——这个设定行为是\"自因\"的（causa sui）——自己产生自己。\n\n萨特说：**自因是不可能的。** 意识（自为）永远不是它自己——它总是在超越自己、逃离自己。没有\"自我设定自身\"——只有\"自我永远不能等于自身\"。\n\n这个差异的后果：\n- 费希特的哲学有一种**乐观的动力**：人在靠近绝对自我的过程中不断成长\n- 萨特的哲学有一种**痛苦的张力**：人永远渴望成为\"自在-自为\"（=上帝）——但这是不可能的欲望\n\n萨特说\"人是一种无用的激情\"——费希特说\"人是无限靠近自身的努力\"。同一个起点，两种完全不同的色调。\n\n## 持续追问\n\n1. **费希特的\"知识学\"——为什么从来没有成为主流？** 它的目标是建立一个从第一原则出发的完整演绎体系——这听起来像是每一个哲学家的梦想。但为什么它没成功？是因为费希特的演绎有逻辑漏洞？还是因为\"从一个原则出发\"这个作法本身就过于自信？\n\n2. **费希特的\"民族主义\"演讲——和哲学的关系？** 费希特晚年写了《对德意志民族的演讲》——在拿破仑占领柏林期间。这些演讲被后来的德国民族主义（和纳粹）广泛引用。这不是偶然的——费希特的\"绝对自我\"如果被投射到一个民族身上——就变成了\"德意志民族作为绝对精神的承载者\"。这是费希特哲学的内在危险，还是后人歪曲使用？\n\n3. **非我作为\"健身房\"——这个比喻成立吗？** 费希特说非我是自我用来锻炼自己的。但如果非我是自我设定的——那自我不是在自己骗自己吗？黑格尔会看到这个困难——并且用\"精神通过历史实现自己\"来回答。但这是不是一个好的回答？\n\n## 收获\n\n最大收获不是费希特本身——是**填补了德国观念论的缺口之后，整条线的张力突然清晰了：**\n\n- 康德说：这有一条边界。在这边（现象界），知识是确定的。\n- 费希特说：没有边界——一切从内部产生。这是**彻底的理想主义**。\n- 谢林说：不对——内部的根源是自然——外部和内部是同源的。这是**同一哲学**。\n- 黑格尔说：你们都只走了一半。真正的道路是\"通过外部实现内部\"——精神通过历史、通过异化、通过回归自己。这是**绝对精神**。\n\n从康德到黑格尔，不是\"越来越复杂\"——是\"边界被一步步撤除\"的过程。费希特是那个说\"其实没有墙\"的人——后面的争论都围绕这句话展开。\n\n## 相关链接\n\n- [[Concepts/费希特]]\n- [[Concepts/康德]]\n- [[Concepts/萨特]]\n- [[Syntheses/费希特-vs-康德-从统觉到绝对自我]]\n- [[德国观念论]]\n- [[现象与物自体]]"
     }
   ]
-}
+};;;
+
 let allNotes = NOTES.notes;
 let fuse = null;
 let currentCategory = '';
@@ -1000,6 +1213,5 @@ function esc(s) { const d = document.createElement('div'); d.textContent = s; re
 
 init();
 </script>
-
 </body>
 </html>
